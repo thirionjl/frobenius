@@ -227,6 +227,31 @@ class MatrixType:
             for col_idx in range(self._ncols):
                 yield row_start_idx + col_idx
 
+    def col_index_iterator(self) -> Iterable[int]:
+        for col_idx in range(self._ncols):
+            col_offset = self._shift + col_idx
+            for row_idx in range(self._nrows):
+                yield row_idx * self._row_size + col_offset
+
+    def expand_row_broadcast_iterator(self, nrepeats: int) -> Iterable[int]:
+        assert self.nrows == 1
+        for _ in range(nrepeats):
+            for col_idx in range(self._ncols):
+                yield self._shift + col_idx
+
+    def expand_column_broadcast_iterator(self, nrepeats: int) -> Iterable[int]:
+        assert self.ncols == 1
+        for _ in range(nrepeats):
+            for row_idx in range(self._nrows):
+                shift = row_idx * self._row_size + self._shift
+                yield shift
+
+    def expand_cell_broadcast_iterator(self, nrepeats: int):
+        assert self.ncols == self.nrows
+        assert self.ncols == 1
+        for _ in range(nrepeats):
+            yield self._shift
+
     def _set_sub_matrix(self, rows: slice, cols: slice, value: 'MatrixType') -> 'MatrixType':
         row_start, row_end, row_step = self._as_slice(rows).indices(self.nrows)
         col_start, col_end, col_step = self._as_slice(cols).indices(self.ncols)
@@ -328,6 +353,7 @@ class MatrixType:
 
     def __add__(self, other: 'MatrixType') -> 'MatrixType':
         if isinstance(other, MatrixType):
+
             if other.shape() == self.shape():
                 return self._add_same_size(other)
             elif other.shape() == (1, self.ncols):
@@ -348,37 +374,31 @@ class MatrixType:
             raise ValueError(f'Incompatible types for matrix addition: {type(other)}')
 
     def _add_vertical(self, other):
-        res: array = array('f', [0.0]) * (self.nrows * self.ncols)
-        i: int = 0
-        for r in range(self.nrows):
-            for c in range(self.ncols):
-                res[i] = self._data[r * self.ncols + c] + other._data[r]
-                i += 1
-        return MatrixType(res, self.nrows, self.ncols)
+        res = self.zeros(Shape(self.nrows, self.ncols))
+        for s, o, r in zip(self.col_index_iterator(), other.expand_column_broadcast_iterator(self.ncols),
+                           res.col_index_iterator()):
+            res._data[r] = other._data[o] + self._data[s]
+        return res
 
     def _add_horizontal(self, other):
-        res: array = array('f', [0.0]) * (self.nrows * self.ncols)
-        i: int = 0
-        for r in range(self.nrows):
-            for c in range(self.ncols):
-                res[i] = self._data[r * self.ncols + c] + other._data[c]
-                i += 1
-        return MatrixType(res, self.nrows, self.ncols)
+        res = self.zeros(Shape(self.nrows, self.ncols))
+        for s, o, r in zip(self.index_iterator(), other.expand_row_broadcast_iterator(self.nrows),
+                           res.index_iterator()):
+            res._data[r] = other._data[o] + self._data[s]
+        return res
 
     def _add_same_size(self, other):
-        print(self.shape())
-        print(other.shape())
         res = self.zeros(Shape(self.nrows, self.ncols))
-        i: int = 0
         for s, o, r in zip(self.index_iterator(), other.index_iterator(), res.index_iterator()):
             res._data[r] = other._data[o] + self._data[s]
         return res
 
     def _add_everywhere(self, other):
-        res: array = array('f', [0.0]) * (self.nrows * self.ncols)
-        for i in range(self.size):
-            res[i] = self._data[i] + other._data[0]
-        return MatrixType(res, self.nrows, self.ncols)
+        res = self.zeros(Shape(self.nrows, self.ncols))
+        for s, o, r in zip(self.index_iterator(), other.expand_cell_broadcast_iterator(self.ncols * self.nrows),
+                           res.index_iterator()):
+            res._data[r] = other._data[o] + self._data[s]
+        return res
 
     def __eq__(self, other):
         if isinstance(other, MatrixType):

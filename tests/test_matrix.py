@@ -78,9 +78,11 @@ def test_add():
     m = f.matrix([[1, 2], [3, 4]])
     r = f.matrix([[100, 200]])
     c = f.matrix([[100], [200]])
+    e = f.matrix([[1000]])
     assert (m + m) == f.matrix([[2, 4], [6, 8]])
     assert (m + r) == f.matrix([[101, 202], [103, 204]])
     assert (m + c) == f.matrix([[101, 102], [203, 204]])
+    assert (m + e) == f.matrix([[1001, 1002], [1003, 1004]])
 
 
 def test_walk():
