@@ -88,7 +88,7 @@ class Vector:
         return f"{self._to_str()}"
 
     def __repr__(self):
-        return f"matrix({self._to_str()})"
+        return f"vector({self._to_str()})"
 
     def _to_str(self) -> str:
         pattern = '{0:.' + str(DISPLAY_DIGITS) + 'f}'
@@ -110,12 +110,14 @@ class Vector:
 
 
 class MatrixType:
-    __slots__ = ['_data', '_row_count', '_col_count']
+    __slots__ = ['_data', '_shift', '_nrows', '_row_size', '_ncols', '_col_size']
 
-    def __init__(self, data: array, row_count: int, col_count: int):
-        self._row_count: int = row_count
-        self._col_count: int = col_count
+    def __init__(self, data: array, nrows: int, ncols: int, shift: int = 0, row_size: int = None):
         self._data: array = data
+        self._nrows: int = nrows
+        self._ncols: int = ncols
+        self._shift: int = shift
+        self._row_size = ncols if row_size is None else row_size
 
     @classmethod
     def from_flat_collection(cls, data: Collection[N], shape: Shape):
@@ -136,8 +138,9 @@ class MatrixType:
 
     def to_list(self):
         rows: List = list()
-        for i in range(self._row_count):
-            row: List = list(self._data[i * self.ncols: (i + 1) * self.ncols])
+        for i in range(self.nrows):
+            row_start = i * self._row_size + self._shift
+            row: List = list(self._data[row_start: row_start + self._ncols])
             rows.append(row)
         return rows
 
@@ -180,53 +183,90 @@ class MatrixType:
                 return self._get_sub_matrix(rows, cols)
 
         elif isinstance(given, int):
-            return self._get_row(given)
+            return self._get_sub_matrix(given, slice(None, None, None))
         else:
             raise ValueError("Unsupported index type: " + type(given))
 
+    def __setitem__(self, idx, value):
+        if isinstance(idx, slice):
+            return self._set_sub_matrix(idx, slice(None, None, None), value)
+        elif isinstance(idx, tuple):
+            if len(idx) != 2:
+                raise TypeError("Invalid number of arguments for tuple indexing")
+
+            rows, cols = idx
+
+            if isinstance(rows, int) and isinstance(cols, int):
+                return self._set_cell(rows, cols, value)
+            else:
+                return self._set_sub_matrix(rows, cols, value)
+
+        elif isinstance(idx, int):
+            return self._set_sub_matrix(slice(idx, None, None), slice(None, None, None), value)
+        else:
+            raise ValueError("Unsupported index type: " + type(idx))
+
     def _get_sub_matrix(self, rows: slice, cols: slice) -> 'MatrixType':
-        row_start, row_end, row_step = self._as_slice(rows).indices(self._row_count)
-        col_start, col_end, col_step = self._as_slice(cols).indices(self._col_count)
+        row_start, row_end, row_step = self._as_slice(rows).indices(self.nrows)
+        col_start, col_end, col_step = self._as_slice(cols).indices(self.ncols)
 
-        self._check_row_index(row_start)
-        self._check_row_index(row_end)
-        self._check_col_index(col_start)
-        self._check_col_index(col_step)
+        # self._check_row_index(row_start)
+        # self._check_row_index(row_end - 1)
+        # self._check_col_index(col_start)
+        # self._check_col_index(col_step - 1)
 
-        res: array = array('f', [])
-        new_row_count = (row_end - row_start) // row_step
-        new_col_count = (col_end - col_start) // col_step
-        for row_idx in range(row_start, row_end, row_step):
-            idx_start = row_idx * self._col_count
-            idx_end = idx_start + self._col_count
-            row = self._data[idx_start:idx_end]
-            sl = row[col_start:col_end:col_step]
-            res.extend(sl)
+        return MatrixType(self._data,
+                          nrows=row_end - row_start,
+                          ncols=col_end - col_start,
+                          shift=row_start * self._ncols + self._shift + col_start,
+                          row_size=self._row_size)
 
-        return MatrixType(res, new_row_count, new_col_count)
+    def index_iterator(self) -> Iterable[int]:
+        for row_idx in range(self._nrows):
+            row_start_idx = row_idx * self._row_size + self._shift
+            for col_idx in range(self._ncols):
+                yield row_start_idx + col_idx
+
+    def _set_sub_matrix(self, rows: slice, cols: slice, value: 'MatrixType') -> 'MatrixType':
+        row_start, row_end, row_step = self._as_slice(rows).indices(self.nrows)
+        col_start, col_end, col_step = self._as_slice(cols).indices(self.ncols)
+
+        destination = MatrixType(self._data,
+                                 nrows=row_end - row_start,
+                                 ncols=col_end - col_start,
+                                 shift=row_start * self._ncols + self._shift + col_start,
+                                 row_size=self._row_size)
+
+        for src_idx, dst_idx in zip(value.index_iterator(), destination.index_iterator()):
+            self._data[dst_idx] = value._data[src_idx]
+        return self
 
     def _get_cell(self, r: int, c: int) -> float:
         self._check_row_index(r)
         self._check_col_index(c)
-        fr = r * self._col_count + c
+        fr = self._shift + r * self._row_size + c
         return self._data[fr]
+
+    def _set_cell(self, r: int, c: int, value: float) -> None:
+        self._check_row_index(r)
+        self._check_col_index(c)
+        fr = self._shift + r * self._row_size + c
+        self._data[fr] = value
+        return self
 
     def _get_row(self, i: int):
         self._check_row_index(i)
-        fr = i * self._col_count
-        to = fr + self._col_count
-        if self._col_count == 1:
-            return self._data[fr]
-        else:
-            return Vector(self._data[fr:to])
+        fr = self._shift + i * self._row_size
+        to = fr + self._ncols
+        return Vector(self._data[fr:to])
 
     def _check_row_index(self, value: int):
-        if not (0 <= value < self._row_count):
-            raise ValueError(f"Row index is out of bound got {value} to be between 0 and {self._row_count - 1}")
+        if not (0 <= value < self._nrows):
+            raise ValueError(f"Row index is out of bound got {value} to be between 0 and {self._nrows - 1}")
 
     def _check_col_index(self, value: int):
-        if not (0 <= value < self._col_count):
-            raise ValueError(f"Column index is out of bound got {value} to be between 0 and {self._col_count - 1}")
+        if not (0 <= value < self._ncols):
+            raise ValueError(f"Column index is out of bound got {value} to be between 0 and {self._ncols - 1}")
 
     @staticmethod
     def _as_slice(idx: Union[int, slice]) -> slice:
@@ -237,11 +277,11 @@ class MatrixType:
 
     @property
     def nrows(self):
-        return self._row_count
+        return self._nrows
 
     @property
     def ncols(self):
-        return self._col_count
+        return self._ncols
 
     @property
     def size(self):
@@ -326,10 +366,13 @@ class MatrixType:
         return MatrixType(res, self.nrows, self.ncols)
 
     def _add_same_size(self, other):
-        res: array = array('f', [0.0]) * (self.nrows * self.ncols)
-        for i in range(self.size):
-            res[i] = self._data[i] + other._data[i]
-        return MatrixType(res, self.nrows, self.ncols)
+        print(self.shape())
+        print(other.shape())
+        res = self.zeros(Shape(self.nrows, self.ncols))
+        i: int = 0
+        for s, o, r in zip(self.index_iterator(), other.index_iterator(), res.index_iterator()):
+            res._data[r] = other._data[o] + self._data[s]
+        return res
 
     def _add_everywhere(self, other):
         res: array = array('f', [0.0]) * (self.nrows * self.ncols)

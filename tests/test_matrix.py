@@ -40,15 +40,15 @@ def test_matrix_creation():
 
 
 def test_matrix_basic_indexing():
-    m = f.matrix([[1, 2, 3], [4, 5, 6]])
+    m = f.matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    m[:-1, :-1] = f.matrix([[10, 20], [40, 50]])
+    assert m == f.matrix([[10, 20, 3], [40, 50, 6], [7, 8, 9]])
 
-    value = m[1, 0]
-    assert isinstance(value, float)
-    assert value == 4.0
 
-    row_1 = m[1]
-    assert isinstance(row_1, Vector)
-    assert row_1[0] == 4.0
+def test_matrix_basic_indexing2():
+    a = f.matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    a[0] += a[1]
+    assert a == f.matrix([[5, 7, 9], [4, 5, 6], [7, 8, 9]])
 
 
 def test_matrix_sliced_indexing():
