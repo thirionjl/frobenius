@@ -1,0 +1,40 @@
+from typing import Tuple, Union, overload
+
+Coordinates = Tuple[int, int]
+Slices = Union[int, slice, Tuple[slice, slice], Tuple[slice, int], Tuple[int, slice]]
+Subscript = Union[Slices, Coordinates]
+
+
+@overload
+def normalize_subscript(subscript: Coordinates) -> Tuple[bool, slice, slice]:
+    ...
+
+
+@overload
+def normalize_subscript(subscript: Tuple[int, int]) -> Tuple[bool, int, int]:
+    ...
+
+
+def normalize_subscript(subscript: Subscript) -> Union[Tuple[bool, slice, slice], Tuple[bool, int, int]]:
+    if isinstance(subscript, int):
+        return False, _as_slice(subscript), slice(None, None, None)  # Row
+    elif isinstance(subscript, slice):
+        return False, subscript, slice(None, None, None)
+    elif isinstance(subscript, tuple):
+        if len(subscript) != 2:
+            raise TypeError("Invalid number of arguments for tuple indexing")
+
+        r, c = subscript
+        if isinstance(r, int) and isinstance(c, int):
+            return True, r, c  # Cell
+        else:
+            return False, _as_slice(r), _as_slice(c)  # Matrix
+    else:
+        raise ValueError("Unsupported index type: " + type(subscript))
+
+
+def _as_slice(idx: Union[int, slice]) -> slice:
+    if isinstance(idx, int):
+        return slice(idx, idx + 1, 1)
+    elif isinstance(idx, slice):
+        return idx

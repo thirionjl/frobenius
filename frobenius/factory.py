@@ -1,22 +1,39 @@
 from typing import Collection, List
 
 from frobenius import validate
-from frobenius.matrix import MatrixType, Shape, Vector
-from frobenius.numbers import N
+from frobenius.matrix import MatrixType, Shape
+from frobenius.numbers import N, Number
 
 __all__ = ['matrix']
 
 
-def eye(shape: Shape):
-    return MatrixType.eye(shape)
+def singleton(value: Number) -> MatrixType:
+    return MatrixType.singleton(value)
 
 
-def ones(shape: Shape):
-    return MatrixType.ones(shape)
+def eye(nrows: int = None, ncols: int = None, shape: Shape = None):
+    return MatrixType.eye(_shape(nrows, ncols, shape))
 
 
-def zeros(shape: Shape):
-    return MatrixType.zeros(shape)
+def ones(nrows: int = None, ncols: int = None, shape: Shape = None):
+    return MatrixType.ones(_shape(nrows, ncols, shape))
+
+
+def zeros(nrows: int = None, ncols: int = None, shape: Shape = None):
+    return MatrixType.zeros(_shape(nrows, ncols, shape))
+
+
+def _shape(nrows: int = None, ncols: int = None, shape: Shape = None) -> Shape:
+    if isinstance(shape, tuple):
+        return Shape(*shape)
+    elif isinstance(shape, Shape):
+        return shape
+    elif isinstance(nrows, int) and ncols is None:
+        return Shape(nrows, nrows)
+    elif isinstance(nrows, int) and isinstance(ncols, int):
+        return Shape(nrows, ncols)
+    else:
+        raise ValueError('Invalid arguments')
 
 
 def matrix(data: Collection[Collection[N]]):
@@ -24,7 +41,11 @@ def matrix(data: Collection[Collection[N]]):
 
 
 def vector(data: Collection[N]):
-    return Vector.from_collection([float(c) for c in data])
+    return shaped([float(d) for d in data], Shape(len(data), 1))
+
+
+def row_vector(data: Collection[N]):
+    return shaped([float(d) for d in data], Shape(1, len(data)))
 
 
 def shaped(data: Collection[N], shape: Shape):
