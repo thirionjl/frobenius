@@ -1,7 +1,7 @@
 import math
 from array import array
 from itertools import repeat
-from typing import Iterable, Union, overload, Tuple, List, Collection, Callable
+from typing import Iterable, Union, overload, Tuple, List, Collection, Callable, Iterator
 
 from frobenius import numbers
 from frobenius.numbers import N, Number
@@ -109,6 +109,8 @@ class MatrixType:
             elif self.shape == (1, 1):
                 return other.shape, True, self._broadcast_singleton_iter(
                     other.ncols * other.nrows), other._row_first_iter()
+            else:
+                raise ValueError(f'Incompatible operands: {type(other)}')
         else:
             raise ValueError(f'Incompatible operands: {type(other)}')
 
@@ -125,11 +127,11 @@ class MatrixType:
         ...
 
     def __getitem__(self, subscript: Subscript) -> Union['MatrixType', float]:
-        is_coordinates, r, c = normalize_subscript(subscript)
+        is_coordinates, r, c = normalize_subscript(subscript, self.nrows, self.ncols)
         return self._get_cell_at(r, c) if is_coordinates else self._get_sub_matrix(r, c)
 
     def __setitem__(self, subscript: Subscript, value: Operand) -> None:
-        is_coordinates, r, c = normalize_subscript(subscript)
+        is_coordinates, r, c = normalize_subscript(subscript, self.nrows, self.ncols)
         v = MatrixType._as_matrix(value)
 
         if is_coordinates:
@@ -246,7 +248,7 @@ class MatrixType:
                           row_stride=self._col_stride, col_stride=self._row_stride)
 
     def __abs__(self) -> 'MatrixType':
-        return self._apply_unary_op_element_wise(lambda x: x.__abs__())
+        return self._apply_unary_op_element_wise(abs)
 
     def __pow__(self, power, modulo=None) -> 'MatrixType':
         return self._apply_unary_op_element_wise(lambda x: x.__pow__(power, modulo))
@@ -255,15 +257,21 @@ class MatrixType:
         return self._apply_unary_op_element_wise(lambda x: x.__neg__())
 
     def __floor__(self) -> 'MatrixType':
-        return self._apply_unary_op_element_wise(lambda x: x.__floor__())
+        return self._apply_unary_op_element_wise(math.floor)
 
     def __ceil__(self) -> 'MatrixType':
-        return self._apply_unary_op_element_wise(lambda x: x.__ceil__())
+        return self._apply_unary_op_element_wise(math.ceil)
+
+    def __round__(self, n=None):
+        return self._apply_unary_op_element_wise(lambda x: round(x, n))
+
+    def __trunc__(self):
+        return self._apply_unary_op_element_wise(math.trunc)
 
     def _apply_unary_op_element_wise(self, unary_op: Callable) -> 'MatrixType':
         target = self.zeros(self.shape)
-        for idx in self._row_first_iter():
-            target._data[idx] = unary_op(self._data[idx])
+        for target_idx, self_idx in zip(target._row_first_iter(), self._row_first_iter()):
+            target._data[target_idx] = unary_op(self._data[self_idx])
         return target
 
     ###############
@@ -312,6 +320,18 @@ class MatrixType:
 
     def __len__(self) -> int:
         return self.size
+
+    def __copy__(self):
+        return self.copy()
+
+    def copy(self) -> 'MatrixType':
+        return MatrixType(data=array('f', self), nrows=self.nrows, ncols=self.ncols)
+
+    def __contains__(self, item: Number) -> bool:
+        return item in iter(self)
+
+    def __iter__(self) -> Iterator[Number]:
+        return (self._data[idx] for idx in self._row_first_iter())
 
     ###############
     # Comparison operators
