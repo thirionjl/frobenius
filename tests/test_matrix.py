@@ -48,6 +48,40 @@ def test_matrix_set_item():
     assert m == f.matrix([[0, 0, 3], [0, 0, 2000], [1000, 8, 2000]])
 
 
+def test_one_sided_row_broadcast():
+    m = f.matrix([[1, 2, 3], [4, 5, 6]])
+    r = f.matrix([[1000, 2000, 3000]])
+    expected = f.matrix([[1001., 2002., 3003.], [1004., 2005., 3006.]])
+    assert (m + r) == expected
+    assert (r + m) == expected
+
+
+def test_one_sided_column_broadcast():
+    m = f.matrix([[1, 2, 3], [4, 5, 6]])
+    c = f.matrix([[100], [200]])
+    expected = f.matrix([[101, 102, 103], [204, 205, 206]])
+    assert (m + c) == expected
+    assert (c + m) == expected
+
+
+def test_one_sided_single_element_broadcast():
+    m = f.matrix([[1, 2, 3], [4, 5, 6]])
+    e = f.matrix([[1000]])
+    expected = f.matrix([[1001., 1002., 1003.], [1004., 1005., 1006.]])
+    assert (m + e) == expected
+    assert (m + e) == expected
+    assert (m + 1000) == expected
+    assert (1000 + m) == expected
+
+
+def test_two_sided_broadcast():
+    r = f.matrix([[1, 2, 3]])
+    c = f.matrix([[100], [200]])
+    expected = f.matrix([[101., 102., 103.], [201., 202., 203.]])
+    assert (c + r) == expected
+    assert (r + c) == expected
+
+
 def test_add():
     m = f.matrix([[1, 2], [3, 4]])
     r = f.matrix([[100, 200]])
@@ -152,7 +186,8 @@ def test_copy():
 
 
 def test_iter():
-    assert list(f.matrix([[1, 2, 3], [4, 5, 6]])) == [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+    assert list(f.matrix([[1, 2, 3], [4, 5, 6]])) == [1.0, 2.0, 3.0, 4.0, 5.0,
+                                                      6.0]
 
 
 def test_contains():
@@ -162,8 +197,10 @@ def test_contains():
 
 
 def test_str():
-    assert str(f.matrix([[1, 0, 2], [3, -1, -1]])) == '[[1.  , 0.  , 2.  ],\n [3.  , -1.  , -1.  ]]'
+    assert str(f.matrix([[1, 0, 2], [3, -1,
+                                     -1]])) == '[[1.  , 0.  , 2.  ],\n [3.  , -1.  , -1.  ]]'
 
 
 def test_repr():
-    assert repr(f.matrix([[1, 0, 2], [3, -1, -1]])) == 'matrix([[1.  , 0.  , 2.  ],\n        [3.  , -1.  , -1.  ]])'
+    assert repr(f.matrix([[1, 0, 2], [3, -1,
+                                      -1]])) == 'matrix([[1.  , 0.  , 2.  ],\n        [3.  , -1.  , -1.  ]])'
