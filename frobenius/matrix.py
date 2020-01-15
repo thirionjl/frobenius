@@ -120,18 +120,21 @@ class MatrixType:
         if isinstance(other, MatrixType):
             # No broadcast
             if other.shape == self.shape:
-                return self.shape, True, self._row_first_iter(), other._row_first_iter()
+                return self.shape, True, \
+                       self._row_first_iter(), other._row_first_iter()
 
             # other side broadcasts
             elif other.shape == (1, self._ncols):
-                return self.shape, True, self._row_first_iter(), other._broadcast_row_iter(
-                    self.nrows)
+                return self.shape, True, \
+                       self._row_first_iter(), \
+                       other._broadcast_row_iter(self.nrows)
             elif other.shape == (self._nrows, 1):
-                return self.shape, False, self._col_first_iter(), other._broadcast_col_iter(
-                    self.ncols)
+                return self.shape, False, \
+                       self._col_first_iter(), \
+                       other._broadcast_col_iter(self.ncols)
             elif other.shape == (1, 1):
-                return self.shape, True, self._row_first_iter(), other._broadcast_singleton_iter(
-                    self.ncols * self.nrows)
+                return self.shape, True, self._row_first_iter(), \
+                       other._broadcast_singleton_iter(self.ncols * self.nrows)
 
             # self side broadcast
             elif self.shape == (1, other.ncols):
@@ -345,7 +348,8 @@ class MatrixType:
         if isinstance(other, MatrixType):
             if other.nrows != self.ncols:
                 raise ValueError(
-                    f'Incompatible shapes for matrix multiplication: {self.shape} and {other.shape}')
+                    f'Incompatible shapes for matrix multiplication: '
+                    f'{self.shape} and {other.shape}')
 
             res = self.zeros(Shape(self._nrows, other._ncols))
             idx = 0
@@ -446,3 +450,6 @@ class MatrixType:
         stripped = s.rstrip('0')
         pad = ' ' * (length - len(stripped))
         return stripped + pad
+
+    def is_square(self):
+        return self.ncols == self.nrows
