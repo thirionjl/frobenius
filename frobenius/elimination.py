@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Collection
 
 from frobenius import validate, factory
 from frobenius.matrix import MatrixType
@@ -59,6 +59,90 @@ class LuDecomposition:
             x[i] /= lu[i, i]
 
         return x
+
+
+class RowReducedEchelonForm:
+
+    def __init__(self, reduced_form: MatrixType,
+                 permutation: Tuple[int],
+                 m: int,
+                 n: int,
+                 pivot_cols: Collection[int]):
+        self.reduced_form = reduced_form
+        self.perm = permutation
+        self.m = m
+        self.n = n
+        self.pivot_cols = pivot_cols
+        pivot_cols_set = set(pivot_cols)
+        self.free_cols = [i for i in range(self.n) if i not in pivot_cols_set]
+
+    def nullspace(self) -> MatrixType:
+        ns = factory.zeros(self.n, len(self.free_cols))
+
+        for i, f in enumerate(self.free_cols):
+            ns[f, i] = 1
+            for j, p in enumerate(self.pivot_cols):
+                ns[p, i] = - self.reduced_form[j, f]
+
+        return ns
+
+
+def rref(a: MatrixType) -> RowReducedEchelonForm:
+    m, n = a.shape
+
+    # Init
+    lu = a.copy()
+    perm = list(range(m))
+    cnt_row_exchanges = 0
+
+    j = 0
+    i = 0
+    pivot_cols = []
+    while i < m and j < n:
+        # All work will be done on sub-matrix lu[i:, j:]
+        pivot_row_idx, pivot_value = max(enumerate(lu[i:, j], start=i),
+                                         key=lambda x: abs(x[1]))
+
+        if abs(pivot_value) < epsilon:
+            j += 1
+            continue
+
+        if pivot_row_idx != i:
+            # Execute row exchange on perm
+            temp = perm[pivot_row_idx]
+            perm[pivot_row_idx] = perm[i]
+            perm[i] = temp
+
+            # Execute Row exchange on LU
+            temp = lu[pivot_row_idx].copy()
+            lu[pivot_row_idx] = lu[i]
+            lu[i] = temp
+
+            cnt_row_exchanges += 1
+
+        # Perform elimination
+        pivot_cols.append(j)
+        factors_column = lu[i + 1:, j] / pivot_value
+        pivot_row = lu[i, j + 1:]
+
+        lu[i + 1:, j] = 0
+        lu[i + 1:, j + 1:] -= factors_column * pivot_row
+        i += 1
+        j += 1
+
+    # UP
+    # Solve system
+    for i in reversed(range(i)):
+        j = pivot_cols[i]
+        pivot_value = lu[i, j]
+        factors_column = lu[:i, j] / pivot_value
+        pivot_row = lu[i, j + 1:]
+        lu[:i, j + 1:] -= factors_column * pivot_row
+        lu[:i, j] = 0
+        lu[i, j] = 1
+        lu[i, j + 1:] = pivot_row / pivot_value
+
+    return RowReducedEchelonForm(lu, perm, m, n, pivot_cols)
 
 
 def lu_decompose(a: MatrixType) -> LuDecomposition:
