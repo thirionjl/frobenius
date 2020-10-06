@@ -51,7 +51,7 @@ def test_matrix_set_item():
 def test_one_sided_row_broadcast():
     m = f.matrix([[1, 2, 3], [4, 5, 6]])
     r = f.matrix([[1000, 2000, 3000]])
-    expected = f.matrix([[1001., 2002., 3003.], [1004., 2005., 3006.]])
+    expected = f.matrix([[1001.0, 2002.0, 3003.0], [1004.0, 2005.0, 3006.0]])
     assert (m + r) == expected
     assert (r + m) == expected
 
@@ -67,7 +67,7 @@ def test_one_sided_column_broadcast():
 def test_one_sided_single_element_broadcast():
     m = f.matrix([[1, 2, 3], [4, 5, 6]])
     e = f.matrix([[1000]])
-    expected = f.matrix([[1001., 1002., 1003.], [1004., 1005., 1006.]])
+    expected = f.matrix([[1001.0, 1002.0, 1003.0], [1004.0, 1005.0, 1006.0]])
     assert (m + e) == expected
     assert (m + e) == expected
     assert (m + 1000) == expected
@@ -77,7 +77,7 @@ def test_one_sided_single_element_broadcast():
 def test_two_sided_broadcast():
     r = f.matrix([[1, 2, 3]])
     c = f.matrix([[100], [200]])
-    expected = f.matrix([[101., 102., 103.], [201., 202., 203.]])
+    expected = f.matrix([[101.0, 102.0, 103.0], [201.0, 202.0, 203.0]])
     assert (c + r) == expected
     assert (r + c) == expected
 
@@ -124,14 +124,9 @@ def test_sub():
 
 def test_transpose():
     m = f.matrix([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
-    assert m.T == f.matrix([[1, 5, 9],
-                            [2, 6, 10],
-                            [3, 7, 11],
-                            [4, 8, 12]])
+    assert m.T == f.matrix([[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12]])
 
-    assert m[:-1, 1:].T == f.matrix([[2, 6],
-                                     [3, 7],
-                                     [4, 8]])
+    assert m[:-1, 1:].T == f.matrix([[2, 6], [3, 7], [4, 8]])
 
     assert m.T.T == m
 
@@ -141,7 +136,7 @@ def test_abs():
 
 
 def test_neg():
-    assert - f.vector([-1, 2]) == f.vector([1, -2])
+    assert -f.vector([-1, 2]) == f.vector([1, -2])
 
 
 def test_pow():
@@ -186,8 +181,7 @@ def test_copy():
 
 
 def test_iter():
-    assert list(f.matrix([[1, 2, 3], [4, 5, 6]])) == [1.0, 2.0, 3.0, 4.0, 5.0,
-                                                      6.0]
+    assert list(f.matrix([[1, 2, 3], [4, 5, 6]])) == [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
 
 
 def test_contains():
@@ -197,10 +191,14 @@ def test_contains():
 
 
 def test_str():
-    assert str(f.matrix([[1, 0, 2], [3, -1,
-                                     -1]])) == '[[1.  , 0.  , 2.  ],\n [3.  , -1.  , -1.  ]]'
+    assert (
+        str(f.matrix([[1, 0, 2], [3, -1, -1]]))
+        == "[[1.  , 0.  , 2.  ],\n [3.  , -1.  , -1.  ]]"
+    )
 
 
 def test_repr():
-    assert repr(f.matrix([[1, 0, 2], [3, -1,
-                                      -1]])) == 'matrix([[1.  , 0.  , 2.  ],\n        [3.  , -1.  , -1.  ]])'
+    assert (
+        repr(f.matrix([[1, 0, 2], [3, -1, -1]]))
+        == "matrix([[1.  , 0.  , 2.  ],\n        [3.  , -1.  , -1.  ]])"
+    )

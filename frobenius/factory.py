@@ -4,7 +4,7 @@ from frobenius import validate
 from frobenius.matrix import MatrixType, Shape
 from frobenius.numbers import N, Number
 
-__all__ = ['matrix']
+__all__ = ["matrix"]
 
 
 def singleton(value: Number) -> MatrixType:
@@ -33,7 +33,7 @@ def _shape(nrows: int = None, ncols: int = None, shape: Shape = None) -> Shape:
     elif isinstance(nrows, int) and isinstance(ncols, int):
         return Shape(nrows, ncols)
     else:
-        raise ValueError('Invalid arguments')
+        raise ValueError("Invalid arguments")
 
 
 def matrix(data: Collection[Collection[N]]):
@@ -65,23 +65,26 @@ def _shape_of(data: Collection[Collection[N]]) -> Shape:
 
 
 def _count_rows(data: Collection[Collection[N]]) -> int:
-    validate.is_collection('data', data)
+    validate.is_collection("data", data)
     return len(data)
 
 
 def _count_cols(data: Collection[Collection[N]]) -> int:
-    validate.is_collection('data', data)
+    validate.is_collection("data", data)
     ncols = None
     row_idx = 0
     for row in data:
-        validate.is_collection(f'data.row[{row_idx}]', row)
+        validate.is_collection(f"data.row[{row_idx}]", row)
         row_length = len(row)
         if ncols is not None and ncols != row_length:
             raise ValueError(
-                f"Row {row_idx} has an incorrect number of columns. Expected {ncols} but got {row_length}")
+                f"Row {row_idx} has an incorrect number of columns. Expected {ncols} but got {row_length}"
+            )
         else:
             ncols = row_length
         row_idx += 1
     if ncols is None:
-        raise ValueError(f"Impossible to determine column size because no rows has columns")
+        raise ValueError(
+            f"Impossible to determine column size because no rows has columns"
+        )
     return ncols

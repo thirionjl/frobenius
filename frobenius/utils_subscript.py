@@ -6,16 +6,22 @@ Subscript = Union[Slices, Coordinates]
 
 
 @overload
-def normalize_subscript(subscript: Coordinates, rows: int, cols: int) -> Tuple[bool, slice, slice]:
+def normalize_subscript(
+    subscript: Coordinates, rows: int, cols: int
+) -> Tuple[bool, slice, slice]:
     ...
 
 
 @overload
-def normalize_subscript(subscript: Tuple[int, int], rows: int, cols: int) -> Tuple[bool, int, int]:
+def normalize_subscript(
+    subscript: Tuple[int, int], rows: int, cols: int
+) -> Tuple[bool, int, int]:
     ...
 
 
-def normalize_subscript(subscript: Subscript, rows: int, cols: int) -> Union[Tuple[bool, slice, slice], Tuple[bool, int, int]]:
+def normalize_subscript(
+    subscript: Subscript, rows: int, cols: int
+) -> Union[Tuple[bool, slice, slice], Tuple[bool, int, int]]:
     if isinstance(subscript, int):
         return False, _as_slice(subscript, rows), slice(None, None, None)  # Row
     elif isinstance(subscript, slice):
@@ -35,6 +41,6 @@ def normalize_subscript(subscript: Subscript, rows: int, cols: int) -> Union[Tup
 
 def _as_slice(idx: Union[int, slice], size: int) -> slice:
     if isinstance(idx, int):
-        return slice(idx, idx+1, 1) if idx != -1 else slice(idx, size, 1)
+        return slice(idx, idx + 1, 1) if idx != -1 else slice(idx, size, 1)
     elif isinstance(idx, slice):
         return idx

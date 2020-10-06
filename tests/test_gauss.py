@@ -40,6 +40,7 @@ def test_gauss1():
     #     lu[i + 1:, i + 1:] -= factors_column * pivot_row
     #
 
+
 def test_gauss2():
     a = f.matrix([[1, 2, 1, 1, 0, 0], [3, 8, 1, 0, 1, 0], [0, 4, 1, 0, 0, 1]])
     l = f.eye(a.nrows)

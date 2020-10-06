@@ -1,5 +1,4 @@
 class Shape(tuple):
-
     def __new__(cls, *args):
         if len(args) != 2:
             raise TypeError("Shape should have to int arguments")

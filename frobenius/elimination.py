@@ -7,9 +7,12 @@ epsilon = 1e-6
 
 
 class LuDecomposition:
-
-    def __init__(self, lu_matrix: MatrixType, permutation: Tuple[int],
-                 cnt_row_exchanges: int):
+    def __init__(
+        self,
+        lu_matrix: MatrixType,
+        permutation: Collection[int],
+        cnt_row_exchanges: int,
+    ):
         self._lu_matrix = lu_matrix
         self._perm = permutation
         self._cnt_row_exchanges = cnt_row_exchanges
@@ -32,9 +35,11 @@ class LuDecomposition:
         return mat
 
     def __str__(self):
-        return f"L = \n{self.l_matrix()}\n,\n" \
-               f"U = \n{self.u_matrix()}\n,\n" \
-               f"Perm = {self._perm}"
+        return (
+            f"L = \n{self.l_matrix()}\n,\n"
+            f"U = \n{self.u_matrix()}\n,\n"
+            f"Perm = {self._perm}"
+        )
 
     def solve(self, b: MatrixType) -> MatrixType:
         # Reapply elimination to right-hand sides
@@ -48,9 +53,9 @@ class LuDecomposition:
 
         # Elimination
         for i in range(n):
-            factors_column = lu[i + 1:, i]
+            factors_column = lu[i + 1 :, i]
             pivot_row = x[i, :]
-            x[i + 1:] -= factors_column * pivot_row
+            x[i + 1 :] -= factors_column * pivot_row
 
         # Solve triangular system
         for i in reversed(range(n)):
@@ -62,12 +67,14 @@ class LuDecomposition:
 
 
 class RowReducedEchelonForm:
-
-    def __init__(self, reduced_form: MatrixType,
-                 permutation: Tuple[int],
-                 m: int,
-                 n: int,
-                 pivot_cols: Collection[int]):
+    def __init__(
+        self,
+        reduced_form: MatrixType,
+        permutation: Collection[int],
+        m: int,
+        n: int,
+        pivot_cols: Collection[int],
+    ):
         self.reduced_form = reduced_form
         self.perm = permutation
         self.m = m
@@ -82,7 +89,7 @@ class RowReducedEchelonForm:
         for i, f in enumerate(self.free_cols):
             ns[f, i] = 1
             for j, p in enumerate(self.pivot_cols):
-                ns[p, i] = - self.reduced_form[j, f]
+                ns[p, i] = -self.reduced_form[j, f]
 
         return ns
 
@@ -100,8 +107,9 @@ def rref(a: MatrixType) -> RowReducedEchelonForm:
     pivot_cols = []
     while i < m and j < n:
         # All work will be done on sub-matrix lu[i:, j:]
-        pivot_row_idx, pivot_value = max(enumerate(lu[i:, j], start=i),
-                                         key=lambda x: abs(x[1]))
+        pivot_row_idx, pivot_value = max(
+            enumerate(lu[i:, j], start=i), key=lambda x: abs(x[1])
+        )
 
         if abs(pivot_value) < epsilon:
             j += 1
@@ -122,11 +130,11 @@ def rref(a: MatrixType) -> RowReducedEchelonForm:
 
         # Perform elimination
         pivot_cols.append(j)
-        factors_column = lu[i + 1:, j] / pivot_value
-        pivot_row = lu[i, j + 1:]
+        factors_column = lu[i + 1 :, j] / pivot_value
+        pivot_row = lu[i, j + 1 :]
 
-        lu[i + 1:, j] = 0
-        lu[i + 1:, j + 1:] -= factors_column * pivot_row
+        lu[i + 1 :, j] = 0
+        lu[i + 1 :, j + 1 :] -= factors_column * pivot_row
         i += 1
         j += 1
 
@@ -136,11 +144,11 @@ def rref(a: MatrixType) -> RowReducedEchelonForm:
         j = pivot_cols[i]
         pivot_value = lu[i, j]
         factors_column = lu[:i, j] / pivot_value
-        pivot_row = lu[i, j + 1:]
-        lu[:i, j + 1:] -= factors_column * pivot_row
+        pivot_row = lu[i, j + 1 :]
+        lu[:i, j + 1 :] -= factors_column * pivot_row
         lu[:i, j] = 0
         lu[i, j] = 1
-        lu[i, j + 1:] = pivot_row / pivot_value
+        lu[i, j + 1 :] = pivot_row / pivot_value
 
     return RowReducedEchelonForm(lu, perm, m, n, pivot_cols)
 
@@ -156,12 +164,15 @@ def lu_decompose(a: MatrixType) -> LuDecomposition:
 
     for i in range(n):
         # All work will be done on sub-matrix lu[i:, i:]
-        pivot_row_idx, pivot_value = max(enumerate(lu[i:, i], start=i),
-                                         key=lambda x: abs(x[1]))
+        pivot_row_idx, pivot_value = max(
+            enumerate(lu[i:, i], start=i), key=lambda x: abs(x[1])
+        )
 
         if abs(pivot_value) < epsilon:
-            raise ValueError(f'Matrix has not independent rows (or columns) '
-                             f'and hence cannot be LU decomposed')
+            raise ValueError(
+                f"Matrix has not independent rows (or columns) "
+                f"and hence cannot be LU decomposed"
+            )
 
         if pivot_row_idx != i:
             # Execute row exchange on perm
@@ -177,10 +188,10 @@ def lu_decompose(a: MatrixType) -> LuDecomposition:
             cnt_row_exchanges += 1
 
         # Perform elimination
-        factors_column = lu[i + 1:, i] / pivot_value
-        pivot_row = lu[i, i + 1:]
+        factors_column = lu[i + 1 :, i] / pivot_value
+        pivot_row = lu[i, i + 1 :]
 
-        lu[i + 1:, i] = factors_column
-        lu[i + 1:, i + 1:] -= factors_column * pivot_row
+        lu[i + 1 :, i] = factors_column
+        lu[i + 1 :, i + 1 :] -= factors_column * pivot_row
 
     return LuDecomposition(lu, perm, cnt_row_exchanges)
