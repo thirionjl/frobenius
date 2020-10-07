@@ -1,1 +1,11 @@
 **/__pycache__/
+**/.pytest_cache/
+**/.tox/
+**/.idea
+**/.coverage
+**/*.egg-info
+/build/
+**/coverage.xml
+**/.coverage
+/Pipfile.lock
+.pytype

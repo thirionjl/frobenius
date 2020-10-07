@@ -8,14 +8,14 @@ Subscript = Union[Slices, Coordinates]
 @overload
 def normalize_subscript(
     subscript: Coordinates, rows: int, cols: int
-) -> Tuple[bool, slice, slice]:
+) -> Tuple[bool, int, int]:
     ...
 
 
 @overload
 def normalize_subscript(
-    subscript: Tuple[int, int], rows: int, cols: int
-) -> Tuple[bool, int, int]:
+    subscript: Slices, rows: int, cols: int
+) -> Tuple[bool, slice, slice]:
     ...
 
 

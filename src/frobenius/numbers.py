@@ -5,4 +5,4 @@ N = TypeVar("N", int, float, bool)
 
 
 def is_number(x: Any):
-    return isinstance(x, Number.__args__)
+    return isinstance(x, (int, float, bool))

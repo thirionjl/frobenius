@@ -72,19 +72,18 @@ def _count_rows(data: Collection[Collection[N]]) -> int:
 def _count_cols(data: Collection[Collection[N]]) -> int:
     validate.is_collection("data", data)
     ncols = None
-    row_idx = 0
-    for row in data:
+    for row_idx, row in enumerate(data):
         validate.is_collection(f"data.row[{row_idx}]", row)
         row_length = len(row)
         if ncols is not None and ncols != row_length:
             raise ValueError(
-                f"Row {row_idx} has an incorrect number of columns. Expected {ncols} but got {row_length}"
+                f"Row {row_idx} has an incorrect number of columns. "
+                f"Expected {ncols} but got {row_length}"
             )
         else:
             ncols = row_length
-        row_idx += 1
     if ncols is None:
         raise ValueError(
-            f"Impossible to determine column size because no rows has columns"
+            "Impossible to determine column size because no rows has columns"
         )
     return ncols

@@ -1,4 +1,4 @@
-from typing import Tuple, Collection
+from typing import Sequence, List
 
 from frobenius import validate, factory
 from frobenius.matrix import MatrixType
@@ -10,7 +10,7 @@ class LuDecomposition:
     def __init__(
         self,
         lu_matrix: MatrixType,
-        permutation: Collection[int],
+        permutation: Sequence[int],
         cnt_row_exchanges: int,
     ):
         self._lu_matrix = lu_matrix
@@ -70,10 +70,10 @@ class RowReducedEchelonForm:
     def __init__(
         self,
         reduced_form: MatrixType,
-        permutation: Collection[int],
+        permutation: Sequence[int],
         m: int,
         n: int,
-        pivot_cols: Collection[int],
+        pivot_cols: Sequence[int],
     ):
         self.reduced_form = reduced_form
         self.perm = permutation
@@ -99,7 +99,7 @@ def rref(a: MatrixType) -> RowReducedEchelonForm:
 
     # Init
     lu = a.copy()
-    perm = list(range(m))
+    perm: List[int] = list(range(m))
     cnt_row_exchanges = 0
 
     j = 0
@@ -117,14 +117,14 @@ def rref(a: MatrixType) -> RowReducedEchelonForm:
 
         if pivot_row_idx != i:
             # Execute row exchange on perm
-            temp = perm[pivot_row_idx]
+            temp_idx = perm[pivot_row_idx]
             perm[pivot_row_idx] = perm[i]
-            perm[i] = temp
+            perm[i] = temp_idx
 
             # Execute Row exchange on LU
-            temp = lu[pivot_row_idx].copy()
+            temp_row = lu[pivot_row_idx].copy()
             lu[pivot_row_idx] = lu[i]
-            lu[i] = temp
+            lu[i] = temp_row
 
             cnt_row_exchanges += 1
 
@@ -159,7 +159,7 @@ def lu_decompose(a: MatrixType) -> LuDecomposition:
 
     # Init
     lu = a.copy()
-    perm = list(range(a.nrows))
+    perm: List[int] = list(range(a.nrows))
     cnt_row_exchanges = 0
 
     for i in range(n):
@@ -170,20 +170,20 @@ def lu_decompose(a: MatrixType) -> LuDecomposition:
 
         if abs(pivot_value) < epsilon:
             raise ValueError(
-                f"Matrix has not independent rows (or columns) "
-                f"and hence cannot be LU decomposed"
+                "Matrix has not independent rows (or columns) "
+                "and hence cannot be LU decomposed"
             )
 
         if pivot_row_idx != i:
             # Execute row exchange on perm
-            temp = perm[pivot_row_idx]
+            temp_idx = perm[pivot_row_idx]
             perm[pivot_row_idx] = perm[i]
-            perm[i] = temp
+            perm[i] = temp_idx
 
             # Execute Row exchange on LU
-            temp = lu[pivot_row_idx].copy()
+            temp_row = lu[pivot_row_idx].copy()
             lu[pivot_row_idx] = lu[i]
-            lu[i] = temp
+            lu[i] = temp_row
 
             cnt_row_exchanges += 1
 

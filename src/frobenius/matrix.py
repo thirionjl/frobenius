@@ -10,6 +10,7 @@ from typing import (
     Collection,
     Callable,
     Iterator,
+    cast,
 )
 
 from frobenius import numbers
@@ -234,9 +235,12 @@ class MatrixType:
     def __getitem__(self, subscript: Slices) -> "MatrixType":
         ...
 
-    def __getitem__(self, subscript: Subscript) -> Union["MatrixType", float]:
+    def __getitem__(self, subscript: Subscript) -> Union["MatrixType", Number]:
         is_coordinates, r, c = normalize_subscript(subscript, self.nrows, self.ncols)
-        return self._get_cell_at(r, c) if is_coordinates else self._get_sub_matrix(r, c)
+        if is_coordinates:
+            return self._get_cell_at(cast(int, r), cast(int, c))
+        else:
+            return self._get_sub_matrix(cast(slice, r), cast(slice, c))
 
     def __setitem__(self, subscript: Subscript, value: Operand) -> None:
         is_coordinates, r, c = normalize_subscript(subscript, self.nrows, self.ncols)
@@ -259,7 +263,8 @@ class MatrixType:
         idx = self._shift + r * self._row_stride + c * self._col_stride
         if value.shape != (1, 1):
             raise ValueError(
-                f"To set a single cell matrix, submitted value to set should be of shape (1,1)"
+                "To set a single cell matrix, submitted value to set "
+                "should be of shape (1,1)"
             )
 
         self._data[idx] = value._get_cell_at(0, 0)
@@ -287,7 +292,8 @@ class MatrixType:
         target_shape, _, dst_it, src_it = destination._broadcast_iters(value)
         if target_shape != destination.shape:
             raise ValueError(
-                f"Cannot fit value with shape {target_shape} into destination shape {destination.shape}"
+                f"Cannot fit value with shape {target_shape} "
+                f"into destination shape {destination.shape}"
             )
 
         for dst_idx, src_idx in zip(dst_it, src_it):
@@ -328,7 +334,7 @@ class MatrixType:
         if numbers.is_number(other):
             return self.__add__(other)
         else:
-            raise ValueError(f"Unsupported type:" + type(other))
+            raise ValueError("Unsupported type:" + type(other))
 
     def __mul__(self, other: Operand) -> "MatrixType":
         return self._apply_binary_op_element_wise(other, lambda x, y: x * y)
@@ -337,7 +343,7 @@ class MatrixType:
         if numbers.is_number(other):
             return self.__mul__(other)
         else:
-            raise ValueError(f"Unsupported type:" + type(other))
+            raise ValueError("Unsupported type:" + type(other))
 
     def __truediv__(self, other: Operand) -> "MatrixType":
         return self._apply_binary_op_element_wise(other, lambda x, y: x / y)

@@ -6,7 +6,7 @@ epsilon = 1e-6
 def test_gauss1():
     a = f.matrix([[10, -7, 0], [-3, 2, 6], [5, -1, 5]])  # carrée !
     assert a.nrows == a.ncols
-    n = a.nrows
+    # n = a.nrows
     #
     # # Init
     # lu = a.copy()
@@ -43,7 +43,7 @@ def test_gauss1():
 
 def test_gauss2():
     a = f.matrix([[1, 2, 1, 1, 0, 0], [3, 8, 1, 0, 1, 0], [0, 4, 1, 0, 0, 1]])
-    l = f.eye(a.nrows)
+    lo = f.eye(a.nrows)
     u = a.copy()
 
     # 1 Clean col 1
@@ -61,13 +61,13 @@ def test_gauss2():
             if val != 0.0:
                 factor = val / pivot
                 u[other_row_idx] -= factor * u[pivot_row_idx]
-                l[other_row_idx, current_col_idx] = factor
+                lo[other_row_idx, current_col_idx] = factor
 
     print("===Initial===")
     print(a)
 
     print("===L matrix ===")
-    print(l)
+    print(lo)
 
     print("===U matrix ===")
     print(u)

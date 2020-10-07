@@ -6,8 +6,7 @@ name = "pypi"
 [packages]
 
 [dev-packages]
-pytest = "*"
-numpy = "*"
+greeter = {editable = true, extras = ["test"], path = "."}
 
 [requires]
 python_version = "3.8"
