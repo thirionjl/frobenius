@@ -6,6 +6,5 @@
 **/*.egg-info
 /build/
 **/coverage.xml
-**/.coverage
 /Pipfile.lock
 .pytype
