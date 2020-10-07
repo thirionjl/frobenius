@@ -247,9 +247,9 @@ class MatrixType:
         v = MatrixType._as_matrix(value)
 
         if is_coordinates:
-            self._set_cell_at(r, c, v)
+            self._set_cell_at(cast(int, r), cast(int, c), v)
         else:
-            self._set_sub_matrix(r, c, v)
+            self._set_sub_matrix(cast(slice, r), cast(slice, c), v)
 
     def _get_cell_at(self, r: int, c: int) -> float:
         self._check_row_index(r)
@@ -303,9 +303,9 @@ class MatrixType:
     @staticmethod
     def _as_matrix(value: Union[Number, "MatrixType"]) -> "MatrixType":
         if numbers.is_number(value):
-            return MatrixType.singleton(value)
+            return MatrixType.singleton(cast(Number, value))
         elif isinstance(value, MatrixType):
-            return value
+            return cast(MatrixType, value)
         else:
             raise ValueError(f"Values of type {type(value)} cannot be set into matrix")
 
@@ -334,7 +334,7 @@ class MatrixType:
         if numbers.is_number(other):
             return self.__add__(other)
         else:
-            raise ValueError("Unsupported type:" + type(other))
+            raise ValueError(f"Unsupported type: {type(other)}")
 
     def __mul__(self, other: Operand) -> "MatrixType":
         return self._apply_binary_op_element_wise(other, lambda x, y: x * y)
@@ -343,7 +343,7 @@ class MatrixType:
         if numbers.is_number(other):
             return self.__mul__(other)
         else:
-            raise ValueError("Unsupported type:" + type(other))
+            raise ValueError(f"Unsupported type: {type(other)}")
 
     def __truediv__(self, other: Operand) -> "MatrixType":
         return self._apply_binary_op_element_wise(other, lambda x, y: x / y)
