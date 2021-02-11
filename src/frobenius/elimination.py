@@ -8,10 +8,7 @@ epsilon = 1e-6
 
 class LuDecomposition:
     def __init__(
-        self,
-        lu_matrix: MatrixType,
-        permutation: Sequence[int],
-        cnt_row_exchanges: int,
+        self, lu_matrix: MatrixType, permutation: Sequence[int], cnt_row_exchanges: int,
     ):
         self._lu_matrix = lu_matrix
         self._perm = permutation
