@@ -1,6 +1,6 @@
 from frobenius import factory as f, elimination
 
-epsilon = 1e-6
+epsilon = 1e-8
 
 
 def test_gauss1():
@@ -42,56 +42,14 @@ def test_gauss1():
 
 
 def test_gauss2():
-    a = f.matrix([[1,2,2,2], [2,4,6,8], [3,6,8,10]])
-    rref = elimination.rref(a)
-    print("RREF = ")
-    print(rref.reduced_form)
-    print("NULLSPACE = ")
-    print(rref.nullspace())
-    # a = f.matrix([[1, 2, 1, 1, 0, 0], [3, 8, 1, 0, 1, 0], [0, 4, 1, 0, 0, 1]])
-    # lo = f.eye(a.nrows)
-    # u = a.copy()
-    #
-    # # 1 Clean col 1
-    # # Find pivot
-    # pivot_col_idx = 0
-    #
-    # # Descent
-    # for current_col_idx in range(u.nrows):
-    #     pivot_row_idx = current_col_idx
-    #     pivot_col_idx = pivot_row_idx  # TODO
-    #     pivot = u[pivot_row_idx, pivot_col_idx]
-    #
-    #     for other_row_idx in range(pivot_row_idx + 1, u.nrows):
-    #         val = u[other_row_idx, current_col_idx]
-    #         if val != 0.0:
-    #             factor = val / pivot
-    #             u[other_row_idx] -= factor * u[pivot_row_idx]
-    #             lo[other_row_idx, current_col_idx] = factor
-    #
-    # print("===Initial===")
-    # print(a)
-    #
-    # print("===L matrix ===")
-    # print(lo)
-    #
-    # print("===U matrix ===")
-    # print(u)
-    #
-    # # RR
-    # r = u.copy()
-    # for current_row_idx in reversed(range(r.nrows)):
-    #     current_col_idx = current_row_idx
-    #     pivot_row_idx = current_row_idx
-    #     pivot = r[current_row_idx, current_col_idx]
-    #
-    #     for other_row_idx in range(0, current_row_idx):
-    #         val = r[other_row_idx, current_col_idx]
-    #         if val != 0.0:
-    #             factor = val / pivot
-    #             r[other_row_idx] -= factor * r[pivot_row_idx]
-    #
-    #     r[pivot_row_idx] /= pivot
-    #
-    # print("===Inverse matrix ===")
-    # print(r[:, 3:])
+    a = f.matrix([[1, 2, 2, 2], [2, 4, 6, 8], [3, 6, 8, 10]])
+    echelon = elimination.echelon(a)
+
+    print(f"rref=\n{echelon.rref()}")
+
+    # print(f"rowspace=\n{echelon.rowspace()}")
+    # print(f"colspace=\n{echelon.colspace()}")
+    print(f"nullspace=\n{echelon.nullspace()}")
+    # print(f"left nullspace=\n{echelon.left_nullspace()}")
+
+    print(f"x_particular=\n{echelon.solve(f.vector([1, 4, 50]))}")
