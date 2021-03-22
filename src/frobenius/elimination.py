@@ -1,4 +1,5 @@
-from typing import Sequence, List
+import math
+from typing import Sequence, List, NamedTuple
 
 from frobenius import validate, factory
 from frobenius.matrix import MatrixType
@@ -6,9 +7,38 @@ from frobenius.matrix import MatrixType
 epsilon = 1e-6
 
 
+class Solution(NamedTuple):
+    count: int
+    solution: MatrixType
+    nullspace: MatrixType
+
+
+def rref(a: MatrixType) -> MatrixType:
+    return echelon(a).rref()
+
+
+def solve(a: MatrixType, b: MatrixType) -> Solution:
+    m, n = a.shape
+    validate.is_true("b", f"needs to be have {m} rows and at least 1 column ", b.nrows == m and b.ncols >= 1)
+    e = echelon(a)
+    s = e.solve(b)
+
+    has_solution = next(filter(math.isnan, s), None) is None
+
+    if not has_solution:
+        return Solution(0, None, None)
+    elif e.rank >= n:
+        return Solution(1, s, None)
+    elif e.rank < n:
+        return Solution(math.inf, s, e.nullspace())
+
+
 class LuDecomposition:
     def __init__(
-        self, lu_matrix: MatrixType, permutation: Sequence[int], cnt_row_exchanges: int,
+            self,
+            lu_matrix: MatrixType,
+            permutation: Sequence[int],
+            cnt_row_exchanges: int,
     ):
         self._lu_matrix = lu_matrix
         self._perm = permutation
@@ -50,9 +80,9 @@ class LuDecomposition:
 
         # Elimination
         for i in range(n):
-            factors_column = lu[i + 1 :, i]
+            factors_column = lu[i + 1:, i]
             pivot_row = x[i, :]
-            x[i + 1 :] -= factors_column * pivot_row
+            x[i + 1:] -= factors_column * pivot_row
 
         # Solve triangular system
         for i in reversed(range(n)):
@@ -98,22 +128,22 @@ def lu_decompose(a: MatrixType) -> LuDecomposition:
             cnt_row_exchanges += 1
 
         # Perform elimination
-        factors_column = lu[i + 1 :, i] / pivot_value
-        pivot_row = lu[i, i + 1 :]
+        factors_column = lu[i + 1:, i] / pivot_value
+        pivot_row = lu[i, i + 1:]
 
-        lu[i + 1 :, i] = factors_column
-        lu[i + 1 :, i + 1 :] -= factors_column * pivot_row
+        lu[i + 1:, i] = factors_column
+        lu[i + 1:, i + 1:] -= factors_column * pivot_row
 
     return LuDecomposition(lu, perm, cnt_row_exchanges)
 
 
 class EchelonForm:
     def __init__(
-        self,
-        matrix: MatrixType,
-        lu_echelon: MatrixType,
-        permutation: Sequence[int],
-        pivot_cols: Sequence[int],
+            self,
+            matrix: MatrixType,
+            lu_echelon: MatrixType,
+            permutation: Sequence[int],
+            pivot_cols: Sequence[int],
     ):
         self._matrix = matrix
         self._lu_echelon = lu_echelon
@@ -133,13 +163,13 @@ class EchelonForm:
                 j = self._pivot_cols[i]
                 pivot_value = lu[i, j]
                 factors_column = lu[:i, j] / pivot_value
-                pivot_row = lu[i, j + 1 :]
-                lu[:i, j + 1 :] -= factors_column * pivot_row
+                pivot_row = lu[i, j + 1:]
+                lu[:i, j + 1:] -= factors_column * pivot_row
                 lu[:i, j] = 0
                 if i + 1 < self.m:
-                    lu[i + 1 :, j] = 0
+                    lu[i + 1:, j] = 0
                 lu[i, j] = 1
-                lu[i, j + 1 :] = pivot_row / pivot_value
+                lu[i, j + 1:] = pivot_row / pivot_value
 
             self._rref = lu
 
@@ -166,7 +196,7 @@ class EchelonForm:
 
     def left_nullspace(self) -> MatrixType:
         bs = self._apply_elimination(factory.eye(self.m, self.m))
-        return bs[self.rank :].T
+        return bs[self.rank:].T
 
     def solve(self, b: MatrixType) -> MatrixType:
         return self._find_single_solution(self._apply_elimination(b))
@@ -209,8 +239,8 @@ class EchelonForm:
             b_elim[i] = b[self._perm[i]]
         # Elimination on b matrix
         for i, j in enumerate(self._pivot_cols):
-            factors_column = lu[i + 1 :, j]
-            b_elim[i + 1 :, :] -= factors_column * b_elim[i]
+            factors_column = lu[i + 1:, j]
+            b_elim[i + 1:, :] -= factors_column * b_elim[i]
         return b_elim
 
 
@@ -250,11 +280,11 @@ def echelon(a: MatrixType) -> EchelonForm:
 
         # Perform elimination
         pivot_cols.append(j)
-        factors_column = lu[i + 1 :, j] / pivot_value
-        pivot_row = lu[i, j + 1 :]
+        factors_column = lu[i + 1:, j] / pivot_value
+        pivot_row = lu[i, j + 1:]
 
-        lu[i + 1 :, j] = factors_column
-        lu[i + 1 :, j + 1 :] -= factors_column * pivot_row
+        lu[i + 1:, j] = factors_column
+        lu[i + 1:, j + 1:] -= factors_column * pivot_row
         i += 1
         j += 1
 

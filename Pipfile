@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 
 [dev-packages]
-greeter = {editable = true, extras = ["dev"], path = "."}
+frobenius = {editable = true, extras = ["dev"], path = "."}
 
 [requires]
 python_version = "3.8"

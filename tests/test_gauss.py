@@ -45,11 +45,14 @@ def test_gauss2():
     a = f.matrix([[1, 2, 2, 2], [2, 4, 6, 8], [3, 6, 8, 10]])
     echelon = elimination.echelon(a)
 
-    print(f"rref=\n{echelon.rref()}")
+    # print(f"rref=\n{echelon.rref()}")
 
     # print(f"rowspace=\n{echelon.rowspace()}")
     # print(f"colspace=\n{echelon.colspace()}")
-    print(f"nullspace=\n{echelon.nullspace()}")
+    # print(f"nullspace=\n{echelon.nullspace()}")
     # print(f"left nullspace=\n{echelon.left_nullspace()}")
 
-    print(f"x_particular=\n{echelon.solve(f.vector([1, 4, 50]))}")
+    # print(f"x_particular=\n{echelon.solve(f.vector([1, 4, 50]))}")
+
+    b = f.vector([1, 5, 6])
+    print(elimination.solve(a, b))
