@@ -43,7 +43,7 @@ def test_gauss1():
 
 def test_gauss2():
     a = f.matrix([[1, 2, 2, 2], [2, 4, 6, 8], [3, 6, 8, 10]])
-    echelon = elimination.echelon(a)
+    # echelon = elimination.echelon(a)
 
     # print(f"rref=\n{echelon.rref()}")
 
@@ -55,4 +55,9 @@ def test_gauss2():
     # print(f"x_particular=\n{echelon.solve(f.vector([1, 4, 50]))}")
 
     b = f.vector([1, 5, 6])
-    print(elimination.solve(a, b))
+    cnt, x_particular, nullspace = elimination.solve(a, b)
+    print(cnt)
+    print(x_particular)
+    print(nullspace)
+    # print(elimination.solve(a, b).count())
+    print(elimination.cr_decompose(a))

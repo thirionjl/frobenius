@@ -1,10 +1,47 @@
 from typing import Collection, List
 
+from frobenius import factory as f
 from frobenius import validate
 from frobenius.matrix import MatrixType, Shape
 from frobenius.numbers import N, Number
 
 __all__ = ["matrix"]
+
+
+def stack(*vectors: MatrixType, **kwargs):
+    return vstack(*vectors) if kwargs["vertical"] else hstack(*vectors)
+
+
+def hstack(*vectors: MatrixType):
+    ref = vectors[0] if vectors[0].nrows == 1 else vectors[0].T
+    result = f.zeros(len(vectors), ref.ncols)
+    for i, v in enumerate(vectors):
+        nv = v
+        if v.shape == ref.T.shape:
+            nv = nv.T
+        elif v.shape != vectors[0].shape:
+            raise ValueError(
+                f"Invalid matrix shape {v.shape}: should be "
+                f"either {vectors[0].shape} or {vectors[0].T.shape}"
+            )
+        result[i, :] = nv
+    return result
+
+
+def vstack(*vectors: MatrixType):
+    ref = vectors[0] if vectors[0].ncols == 1 else vectors[0].T
+    stack = f.zeros(ref.nrows, len(vectors))
+    for i, v in enumerate(vectors):
+        nv = v
+        if v.shape == ref.T.shape:
+            nv = nv.T
+        elif v.shape != vectors[0].shape:
+            raise ValueError(
+                f"Invalid matrix shape {v.shape}: should be "
+                f"either {vectors[0].shape} or {vectors[0].T.shape}"
+            )
+        stack[:, i] = nv
+    return stack
 
 
 def singleton(value: Number) -> MatrixType:

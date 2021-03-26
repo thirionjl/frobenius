@@ -19,6 +19,14 @@ def test_factory_methods_and_equals():
     assert f.singleton(18) == f.matrix([[18]])
 
 
+def test_stack():
+    v1 = f.vector([1, 2, 3])
+    v2 = f.vector([4, 5, 6])
+
+    assert f.hstack(v1, v2) == f.matrix([[1, 2, 3], [4, 5, 6]])
+    assert f.vstack(v1, v2) == f.matrix([[1, 2, 3], [4, 5, 6]]).T
+
+
 def test_matrix_get_item():
     m = f.matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     assert m[:] == m

@@ -528,3 +528,11 @@ class MatrixType:
 
     def is_square(self):
         return self.ncols == self.nrows
+
+    def __float__(self):
+        if self.size != 1:
+            raise ValueError("Matrix is not of size 1")
+        return next(iter(self))
+
+    # def norm(self):
+    #     return math.sqrt(float(self))
