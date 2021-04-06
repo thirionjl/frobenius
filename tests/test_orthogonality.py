@@ -3,15 +3,19 @@ from frobenius import orthogonality as o
 
 
 def test_gram_schmidt():
-    a = f.matrix([[1, 0, 0], [2, 0, 3], [4, 5, 6]]).T
-    q = o.gram_schmidt(a)
+    a = f.matrix([[4, 5, 6], [0, 15, 0], [12, 0, 0]]).T
+    q, perm = o.gram_schmidt(a)
 
-    assert q == f.matrix([[1, 0, 0], [0, 0, 1], [0, 1, 0]])
+    assert q == f.matrix([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    assert perm == [1, 2, 0]
 
 
 def test_qr_decompose():
-    a = f.matrix([[1, 0, 0], [2, 0, 3], [4, 5, 6]]).T
+    a = f.matrix([[0, 15, 0], [12, 0, 0], [4, 5, 6]]).T
     q, r = o.qr_decompose(a)
 
-    assert q == f.matrix([[1, 0, 0], [0, 0, 1], [0, 1, 0]])
-    assert r == f.matrix([[1, 2, 4], [0, 3, 6], [0, 0, 5]])
+    print(q)
+    print(r)
+
+    assert q == f.matrix([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    assert r == f.matrix([[15.0, 0.0, 5.0], [0.0, 12.0, 4.0], [0.0, 0.0, 6.0]])

@@ -54,7 +54,7 @@ lint: ## check style and formatting
 	tox -e fmt -e lint
 
 test: ## run tests quickly with the default Python
-	tox -e py38
+	tox -e py39
 
 type: ## run tests quickly with the default Python
 	tox -e type
@@ -63,7 +63,7 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	tox -e py38
+	tox -e py39
 	$(BROWSER) htmlcov/index.html
 
 release: dist ## package and upload a release
